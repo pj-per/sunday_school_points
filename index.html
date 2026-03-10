@@ -224,7 +224,6 @@ const CONFIG = {
   // 替換成你的 LIFF ID
   LIFF_ID: '2009400350-P0w0ChuN'
 };
-
 // ============================================================
 // 狀態管理
 // ============================================================
@@ -395,11 +394,14 @@ function setPointsMode(mode) {
   state.pointsMode = mode;
   updatePointsValue();
   render();
-  // 保持焦點在輸入框
   setTimeout(() => {
     const input = document.getElementById('points-input');
     if (input) input.focus();
   }, 50);
+}
+
+function toggleSign() {
+  setPointsMode(state.pointsMode === 'add' ? 'subtract' : 'add');
 }
 
 function updatePointsValue() {
@@ -599,25 +601,18 @@ function renderDetail() {
   html += `
     <div class="form-group">
       <label class="form-label">點數</label>
-      <div style="display:flex;gap:8px;margin-bottom:8px">
-        <button id="mode-add" onclick="setPointsMode('add')" style="
-          flex:1;padding:10px 0;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;
-          border:2px solid ${state.pointsMode === 'subtract' ? '#e8eaed' : '#00B900'};
-          background:${state.pointsMode === 'subtract' ? '#fff' : '#e8f5e9'};
-          color:${state.pointsMode === 'subtract' ? '#aaa' : '#00B900'};">
-          ＋ 加點
+      <div style="display:flex;gap:8px;align-items:center">
+        <button onclick="toggleSign()" style="
+          width:52px;height:52px;border-radius:12px;font-size:24px;font-weight:800;cursor:pointer;font-family:inherit;flex-shrink:0;
+          border:2px solid ${state.pointsMode === 'subtract' ? '#e53935' : '#00B900'};
+          background:${state.pointsMode === 'subtract' ? '#ffebee' : '#e8f5e9'};
+          color:${state.pointsMode === 'subtract' ? '#e53935' : '#00B900'};">
+          ${state.pointsMode === 'subtract' ? '−' : '＋'}
         </button>
-        <button id="mode-sub" onclick="setPointsMode('subtract')" style="
-          flex:1;padding:10px 0;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;
-          border:2px solid ${state.pointsMode === 'subtract' ? '#e53935' : '#e8eaed'};
-          background:${state.pointsMode === 'subtract' ? '#ffebee' : '#fff'};
-          color:${state.pointsMode === 'subtract' ? '#e53935' : '#aaa'};">
-          − 扣點
-        </button>
+        <input type="number" class="form-input ${state.pointsMode === 'subtract' ? 'negative' : ''}" id="points-input"
+          value="${state.pointsAbs}" placeholder="輸入點數"
+          oninput="onPointsInput(this)" min="0" style="flex:1">
       </div>
-      <input type="number" class="form-input ${state.pointsMode === 'subtract' ? 'negative' : ''}" id="points-input"
-        value="${state.pointsAbs}" placeholder="輸入點數"
-        oninput="onPointsInput(this)" min="0">
     </div>
   `;
 
