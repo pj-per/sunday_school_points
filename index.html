@@ -224,6 +224,7 @@ const CONFIG = {
   // 替換成你的 LIFF ID
   LIFF_ID: '2009400350-P0w0ChuN'
 };
+
 // ============================================================
 // 狀態管理
 // ============================================================
@@ -609,9 +610,9 @@ function renderDetail() {
           color:${state.pointsMode === 'subtract' ? '#e53935' : '#00B900'};">
           ${state.pointsMode === 'subtract' ? '−' : '＋'}
         </button>
-        <input type="number" class="form-input ${state.pointsMode === 'subtract' ? 'negative' : ''}" id="points-input"
+        <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-input ${state.pointsMode === 'subtract' ? 'negative' : ''}" id="points-input"
           value="${state.pointsAbs}" placeholder="輸入點數"
-          oninput="onPointsInput(this)" min="0" style="flex:1">
+          oninput="onPointsInput(this)" style="flex:1">
       </div>
     </div>
   `;
