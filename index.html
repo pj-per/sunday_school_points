@@ -369,6 +369,26 @@ function toggleShowAll() {
   loadStudents();
 }
 
+function onPointsInput(el) {
+  // 允許輸入負號和數字
+  const val = el.value;
+  state.points = val;
+
+  // 即時更新顏色
+  const num = Number(val);
+  el.className = 'form-input' + (val && num < 0 ? ' negative' : '');
+
+  // 即時更新按鈕狀態
+  const hasValue = val && !isNaN(num) && num !== 0;
+  const btn = document.querySelector('.submit-btn');
+  if (btn) {
+    btn.className = 'submit-btn ' + (hasValue && !state.submitting ? 'active' : 'disabled');
+    btn.disabled = !hasValue || state.submitting;
+    btn.onclick = hasValue && !state.submitting ? submitPoints : null;
+    btn.textContent = val && num < 0 ? '確認扣點' : '確認加點';
+  }
+}
+
 async function submitPoints() {
   const pts = Number(state.points);
   if (!pts || isNaN(pts) || state.submitting) return;
@@ -560,9 +580,9 @@ function renderDetail() {
   html += `
     <div class="form-group">
       <label class="form-label">點數（正數加點，負數扣點）</label>
-      <input type="number" class="form-input ${isNeg ? 'negative' : ''}"
+      <input type="text" inputmode="numeric" class="form-input" id="points-input"
         value="${state.points}" placeholder="例：5 或 -30"
-        oninput="state.points=this.value;render()">
+        oninput="onPointsInput(this)">
     </div>
   `;
 
@@ -570,7 +590,7 @@ function renderDetail() {
     <div class="form-group">
       <label class="form-label">日期</label>
       <input type="date" class="form-input-sm" value="${state.date}"
-        oninput="state.date=this.value">
+        onchange="state.date=this.value">
     </div>
   `;
 
@@ -671,18 +691,22 @@ function renderSuccess() {
 // ============================================================
 // 初始化
 // ============================================================
-// 偵測是否在 LINE 環境
-if (typeof liff !== 'undefined') {
-  initLiff();
-} else {
-  // 開發測試模式：直接載入
-  state.userName = '測試老師';
-  loadStudents();
+function startApp() {
+  if (typeof liff !== 'undefined') {
+    initLiff();
+  } else {
+    // 開發測試模式：直接載入
+    state.userName = '測試老師';
+    loadStudents();
+  }
 }
 </script>
 
-<!-- LIFF SDK -->
+<!-- LIFF SDK - 必須在初始化之前載入 -->
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+<!-- 載入完成後啟動 -->
+<script>startApp();</script>
 
 </body>
 </html>
