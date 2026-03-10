@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>點數管理</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background: #f7f8fa;
+      color: #1a1a2e;
+      min-height: 100vh;
+      padding-bottom: 20px;
+    }
+
+    /* Header */
+    .header {
+      background: #00B900;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-title { color: #fff; font-size: 16px; font-weight: 700; }
+    .header-btn {
+      background: none; border: none; color: #fff;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+
+    /* Loading */
+    .loading {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 60px 20px; gap: 12px;
+    }
+    .spinner {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 3px solid #e0e0e0; border-top-color: #00B900;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 14px; color: #888; }
+
+    /* Toggle */
+    .toggle-bar {
+      padding: 10px 16px;
+      display: flex; align-items: center; gap: 8;
+    }
+    .toggle-label { font-size: 13px; color: #888; }
+    .toggle-switch {
+      width: 40px; height: 22px; border-radius: 11px;
+      background: #ccc; position: relative; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .toggle-switch.active { background: #00B900; }
+    .toggle-switch::after {
+      content: ''; position: absolute; top: 2px; left: 2px;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: #fff; transition: left 0.2s;
+    }
+    .toggle-switch.active::after { left: 20px; }
+
+    /* Student list */
+    .list-container { padding: 0 16px; }
+    .list-title { font-size: 14px; color: #888; font-weight: 500; margin-bottom: 10px; padding-top: 6px; }
+    .student-item {
+      background: #fff; border-radius: 14px; padding: 14px 16px;
+      margin-bottom: 8px; display: flex; align-items: center;
+      justify-content: space-between; cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04); border: 1px solid #eee;
+      transition: transform 0.1s;
+    }
+    .student-item:active { transform: scale(0.98); }
+    .student-item.inactive { opacity: 0.5; }
+    .student-name { font-size: 15px; font-weight: 600; }
+    .student-status {
+      font-size: 10px; padding: 2px 6px; border-radius: 4px;
+      margin-left: 6px; font-weight: 600;
+    }
+    .status-pause { background: #fff3e0; color: #e65100; }
+    .status-left { background: #ffebee; color: #c62828; }
+    .student-points { font-size: 18px; font-weight: 800; color: #00B900; }
+    .student-arrow { font-size: 12px; color: #aaa; margin-left: 8px; }
+
+    /* Detail page */
+    .detail-container { padding: 16px; }
+    .back-btn {
+      background: none; border: none; color: #00B900;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      padding: 0; margin-bottom: 12px;
+    }
+    .detail-header {
+      background: #fff; border-radius: 16px; padding: 16px 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 16px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .detail-name { font-size: 18px; font-weight: 700; }
+    .detail-total { font-size: 28px; font-weight: 800; color: #00B900; line-height: 1; }
+    .detail-total-label { font-size: 11px; color: #aaa; text-align: right; }
+
+    /* Form */
+    .form-card {
+      background: #fff; border-radius: 16px; padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 12px;
+    }
+    .form-group { margin-bottom: 14px; }
+    .form-label {
+      font-size: 13px; color: #888; font-weight: 600;
+      display: block; margin-bottom: 6px;
+    }
+    .form-input {
+      width: 100%; padding: 14px 16px; border: 2px solid #e8eaed;
+      border-radius: 12px; font-size: 20px; font-weight: 700;
+      outline: none; text-align: center; font-family: inherit;
+    }
+    .form-input:focus { border-color: #00B900; }
+    .form-input.negative { color: #e53935; }
+    .form-input-sm {
+      width: 100%; padding: 12px 16px; border: 2px solid #e8eaed;
+      border-radius: 12px; font-size: 15px; outline: none; font-family: inherit;
+    }
+    .form-input-sm:focus { border-color: #00B900; }
+
+    /* Submit button */
+    .submit-btn {
+      width: 100%; padding: 14px 0; border: none; border-radius: 12px;
+      font-size: 16px; font-weight: 700; cursor: pointer;
+      font-family: inherit; transition: opacity 0.2s;
+    }
+    .submit-btn.active {
+      background: #00B900; color: #fff;
+      box-shadow: 0 4px 12px rgba(0,185,0,0.3);
+    }
+    .submit-btn.disabled { background: #ccc; color: #fff; cursor: default; }
+
+    /* Duplicate warning */
+    .duplicate-warning {
+      background: #fff3e0; padding: 12px 16px; border-radius: 12px;
+      margin-bottom: 12px; border: 1px solid #ffe0b2;
+    }
+    .duplicate-title { font-size: 13px; color: #e65100; font-weight: 600; margin-bottom: 6px; }
+    .duplicate-desc { font-size: 12px; color: #bf360c; }
+    .duplicate-btns { display: flex; gap: 8px; margin-top: 10px; }
+    .dup-btn {
+      flex: 1; padding: 10px; border-radius: 8px;
+      font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+    .dup-btn-cancel { background: #fff; color: #e65100; border: 1px solid #e65100; }
+    .dup-btn-confirm { background: #e65100; color: #fff; border: none; }
+
+    /* Detail toggle */
+    .detail-toggle {
+      width: 100%; padding: 12px 0; background: none;
+      border: 1px solid #ddd; border-radius: 12px;
+      font-size: 14px; font-weight: 600; color: #888;
+      cursor: pointer; font-family: inherit;
+    }
+
+    /* Records */
+    .record-item {
+      background: #fff; border-radius: 12px; padding: 12px 16px;
+      margin-bottom: 6px; display: flex; justify-content: space-between;
+      align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .record-date { font-size: 13px; color: #555; }
+    .record-note { font-size: 11px; color: #aaa; margin-top: 2px; }
+    .record-by { font-size: 11px; color: #bbb; margin-top: 2px; }
+    .record-points { font-size: 18px; font-weight: 800; }
+    .record-points.positive { color: #00B900; }
+    .record-points.negative { color: #e53935; }
+
+    /* Success page */
+    .success-page {
+      padding: 24px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      min-height: 400px; gap: 16px;
+    }
+    .success-icon {
+      width: 72px; height: 72px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px;
+    }
+    .success-icon.positive { background: #e8f5e9; }
+    .success-icon.negative { background: #ffebee; }
+    .success-title { font-size: 20px; font-weight: 700; }
+    .success-title.positive { color: #2e7d32; }
+    .success-title.negative { color: #c62828; }
+    .success-detail { font-size: 15px; color: #555; }
+    .success-total { font-size: 13px; color: #999; }
+    .continue-btn {
+      margin-top: 16px; padding: 14px 40px; background: #00B900;
+      color: #fff; border: none; border-radius: 12px;
+      font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: #333; color: #fff; padding: 10px 24px; border-radius: 20px;
+      font-size: 14px; font-weight: 600; z-index: 200;
+      animation: fadeInUp 0.3s ease;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+// ============================================================
+// 設定
+// ============================================================
+const CONFIG = {
+  // Apps Script Web App URL
+  API_URL: 'https://script.google.com/macros/s/AKfycbwa7z6nOZdZa5vj58prKNpC4Ch2d7Xe9Z1VR6Fo2HkJPIZ6-6oOHun5hjqDl9vKZGqJUA/exec',
+  // 替換成你的 LIFF ID
+  LIFF_ID: '2009400350-P0w0ChuN'
+};
+
+// ============================================================
+// 狀態管理
+// ============================================================
+let state = {
+  page: 'loading',       // loading, list, detail, success
+  students: [],
+  showAll: false,
+  selected: null,         // { id, name, status, total }
+  points: '',
+  date: todayStr(),
+  note: '',
+  showDuplicate: false,
+  showRecords: false,
+  records: [],
+  savedPoints: 0,
+  savedName: '',
+  savedNewTotal: 0,
+  userName: '',           // LINE user display name
+  toast: ''
+};
+
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+// ============================================================
+// API 呼叫
+// ============================================================
+async function apiCall(action, data = {}) {
+  try {
+    const res = await fetch(CONFIG.API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action, ...data })
+    });
+    return await res.json();
+  } catch (err) {
+    console.error('API Error:', err);
+    showToast('連線錯誤，請重試');
+    return { error: err.message };
+  }
+}
+
+// ============================================================
+// LIFF 初始化
+// ============================================================
+async function initLiff() {
+  try {
+    await liff.init({ liffId: CONFIG.LIFF_ID });
+    if (liff.isLoggedIn()) {
+      const profile = await liff.getProfile();
+      state.userName = profile.displayName;
+    }
+  } catch (err) {
+    console.log('LIFF init skipped (dev mode):', err);
+    state.userName = '測試老師';
+  }
+  loadStudents();
+}
+
+// ============================================================
+// 資料載入
+// ============================================================
+async function loadStudents() {
+  state.page = 'loading';
+  render();
+
+  const filter = state.showAll ? 'all' : 'active';
+  const result = await apiCall('getAllPoints', { filter });
+
+  if (result.students) {
+    state.students = result.students;
+  }
+  state.page = 'list';
+  render();
+}
+
+async function loadRecords(name) {
+  const result = await apiCall('getStudentRecords', { name, months: 2 });
+  if (result.records) {
+    state.records = result.records;
+  }
+  render();
+}
+
+// ============================================================
+// 操作
+// ============================================================
+function selectStudent(student) {
+  state.selected = student;
+  state.points = '';
+  state.date = todayStr();
+  state.note = '';
+  state.showDuplicate = false;
+  state.showRecords = false;
+  state.records = [];
+  state.page = 'detail';
+  render();
+}
+
+function goBack() {
+  state.selected = null;
+  state.page = 'list';
+  state.showRecords = false;
+  render();
+  loadStudents(); // 重新載入最新資料
+}
+
+async function toggleRecords() {
+  state.showRecords = !state.showRecords;
+  if (state.showRecords && state.records.length === 0) {
+    await loadRecords(state.selected.name);
+  }
+  render();
+}
+
+function toggleShowAll() {
+  state.showAll = !state.showAll;
+  loadStudents();
+}
+
+async function submitPoints() {
+  const pts = Number(state.points);
+  if (!pts || isNaN(pts)) return;
+
+  // 檢查重複
+  if (!state.showDuplicate) {
+    const dupResult = await apiCall('checkDuplicate', {
+      name: state.selected.name,
+      points: pts,
+      date: state.date
+    });
+    if (dupResult.isDuplicate) {
+      state.showDuplicate = true;
+      render();
+      return;
+    }
+  }
+
+  // 送出
+  const result = await apiCall('addPoints', {
+    records: [{
+      name: state.selected.name,
+      points: pts,
+      date: state.date,
+      note: state.note,
+      recorded_by: state.userName
+    }]
+  });
+
+  if (result.success) {
+    state.savedPoints = pts;
+    state.savedName = state.selected.name;
+    state.savedNewTotal = state.selected.total + pts;
+    state.page = 'success';
+    render();
+  } else {
+    showToast('儲存失敗，請重試');
+  }
+}
+
+function confirmDuplicate() {
+  state.showDuplicate = false;
+  submitPoints();
+}
+
+function cancelDuplicate() {
+  state.showDuplicate = false;
+  render();
+}
+
+function continuAfterSuccess() {
+  state.page = 'list';
+  state.selected = null;
+  state.showDuplicate = false;
+  render();
+  loadStudents();
+}
+
+function showToast(msg) {
+  state.toast = msg;
+  render();
+  setTimeout(() => { state.toast = ''; render(); }, 2500);
+}
+
+function closeLiff() {
+  if (typeof liff !== 'undefined' && liff.isInClient()) {
+    liff.closeWindow();
+  }
+}
+
+// ============================================================
+// 渲染
+// ============================================================
+function render() {
+  const app = document.getElementById('app');
+  let html = '';
+
+  // Header
+  html += `
+    <div class="header">
+      <button class="header-btn" onclick="closeLiff()">✕ 關閉</button>
+      <span class="header-title">📋 點數管理</span>
+      <div style="width:40px"></div>
+    </div>
+  `;
+
+  switch (state.page) {
+    case 'loading':
+      html += renderLoading();
+      break;
+    case 'list':
+      html += renderList();
+      break;
+    case 'detail':
+      html += renderDetail();
+      break;
+    case 'success':
+      html += renderSuccess();
+      break;
+  }
+
+  // Toast
+  if (state.toast) {
+    html += `<div class="toast">${state.toast}</div>`;
+  }
+
+  app.innerHTML = html;
+}
+
+function renderLoading() {
+  return `
+    <div class="loading">
+      <div class="spinner"></div>
+      <div class="loading-text">載入中...</div>
+    </div>
+  `;
+}
+
+function renderList() {
+  let html = '';
+
+  // Toggle
+  html += `
+    <div class="toggle-bar">
+      <div class="toggle-switch ${state.showAll ? 'active' : ''}" onclick="toggleShowAll()"></div>
+      <span class="toggle-label">顯示全部（含暫停、已離開）</span>
+    </div>
+  `;
+
+  html += '<div class="list-container">';
+  html += '<div class="list-title">選擇學生</div>';
+
+  for (const s of state.students) {
+    const inactive = s.status !== '在讀' ? 'inactive' : '';
+    let statusTag = '';
+    if (s.status === '暫停') statusTag = '<span class="student-status status-pause">暫停</span>';
+    else if (s.status === '已離開') statusTag = '<span class="student-status status-left">已離開</span>';
+
+    html += `
+      <div class="student-item ${inactive}" onclick="selectStudent(${JSON.stringify(s).replace(/"/g, '&quot;')})">
+        <div>
+          <span class="student-name">${s.name}</span>
+          ${statusTag}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="student-points">${s.total}</span>
+          <span class="student-arrow">點 ›</span>
+        </div>
+      </div>
+    `;
+  }
+
+  html += '</div>';
+  return html;
+}
+
+function renderDetail() {
+  const s = state.selected;
+  const pts = Number(state.points);
+  const isNeg = state.points && pts < 0;
+  const hasValue = state.points && !isNaN(pts) && pts !== 0;
+
+  let html = '<div class="detail-container">';
+
+  // Back
+  html += '<button class="back-btn" onclick="goBack()">← 返回</button>';
+
+  // Header
+  html += `
+    <div class="detail-header">
+      <div class="detail-name">${s.name}</div>
+      <div style="text-align:right">
+        <div class="detail-total">${s.total}</div>
+        <div class="detail-total-label">總點數</div>
+      </div>
+    </div>
+  `;
+
+  // Form
+  html += '<div class="form-card">';
+
+  html += `
+    <div class="form-group">
+      <label class="form-label">點數（正數加點，負數扣點）</label>
+      <input type="number" class="form-input ${isNeg ? 'negative' : ''}"
+        value="${state.points}" placeholder="例：5 或 -30"
+        oninput="state.points=this.value;render()">
+    </div>
+  `;
+
+  html += `
+    <div class="form-group">
+      <label class="form-label">日期</label>
+      <input type="date" class="form-input-sm" value="${state.date}"
+        oninput="state.date=this.value">
+    </div>
+  `;
+
+  html += `
+    <div class="form-group" style="margin-bottom:14px">
+      <label class="form-label">備註（選填）</label>
+      <input type="text" class="form-input-sm" value="${state.note}"
+        placeholder="通常可留空" oninput="state.note=this.value">
+    </div>
+  `;
+
+  // Duplicate warning
+  if (state.showDuplicate) {
+    html += `
+      <div class="duplicate-warning">
+        <div class="duplicate-title">⚠️ 可能重複紀錄</div>
+        <div class="duplicate-desc">
+          今天已有一筆「${s.name} ${pts >= 0 ? '+' : ''}${state.points}」的紀錄，確定要再新增嗎？
+        </div>
+        <div class="duplicate-btns">
+          <button class="dup-btn dup-btn-cancel" onclick="cancelDuplicate()">取消</button>
+          <button class="dup-btn dup-btn-confirm" onclick="confirmDuplicate()">確定新增</button>
+        </div>
+      </div>
+    `;
+  }
+
+  // Submit
+  html += `
+    <button class="submit-btn ${hasValue ? 'active' : 'disabled'}"
+      onclick="${hasValue ? 'submitPoints()' : ''}"
+      ${hasValue ? '' : 'disabled'}>
+      ${isNeg ? '確認扣點' : '確認加點'}
+    </button>
+  `;
+
+  html += '</div>'; // form-card
+
+  // Records toggle
+  html += `
+    <button class="detail-toggle" onclick="toggleRecords()">
+      ${state.showRecords ? '▲ 收合明細' : '▼ 查看近兩個月明細'}
+    </button>
+  `;
+
+  // Records list
+  if (state.showRecords) {
+    html += '<div style="margin-top:12px">';
+    if (state.records.length === 0) {
+      html += '<div style="text-align:center;padding:20px;color:#aaa;font-size:14px">載入中...</div>';
+    } else {
+      for (const rec of state.records) {
+        const ptsClass = rec.points >= 0 ? 'positive' : 'negative';
+        const ptsStr = (rec.points >= 0 ? '+' : '') + rec.points;
+        html += `
+          <div class="record-item">
+            <div>
+              <div class="record-date">${rec.date}</div>
+              ${rec.note ? `<div class="record-note">${rec.note}</div>` : ''}
+              ${rec.recorded_by ? `<div class="record-by">by ${rec.recorded_by}</div>` : ''}
+            </div>
+            <div class="record-points ${ptsClass}">${ptsStr}</div>
+          </div>
+        `;
+      }
+    }
+    html += '</div>';
+  }
+
+  html += '</div>'; // detail-container
+  return html;
+}
+
+function renderSuccess() {
+  const isPos = state.savedPoints >= 0;
+  return `
+    <div class="success-page">
+      <div class="success-icon ${isPos ? 'positive' : 'negative'}">
+        ${isPos ? '✓' : '−'}
+      </div>
+      <div class="success-title ${isPos ? 'positive' : 'negative'}">
+        ${isPos ? '加點成功！' : '扣點完成！'}
+      </div>
+      <div class="success-detail">
+        ${state.savedName} ${isPos ? '+' : ''}${state.savedPoints} 點
+      </div>
+      <div class="success-total">
+        目前總點數：${state.savedNewTotal} 點
+      </div>
+      <button class="continue-btn" onclick="continuAfterSuccess()">繼續操作</button>
+    </div>
+  `;
+}
+
+// ============================================================
+// 初始化
+// ============================================================
+// 偵測是否在 LINE 環境
+if (typeof liff !== 'undefined') {
+  initLiff();
+} else {
+  // 開發測試模式：直接載入
+  state.userName = '測試老師';
+  loadStudents();
+}
+</script>
+
+<!-- LIFF SDK -->
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+</body>
+</html>
