@@ -243,7 +243,8 @@ let state = {
   savedName: '',
   savedNewTotal: 0,
   userName: '',           // LINE user display name
-  toast: ''
+  toast: '',
+  submitting: false       // 防止重複送出
 };
 
 function todayStr() {
@@ -370,10 +371,12 @@ function toggleShowAll() {
 
 async function submitPoints() {
   const pts = Number(state.points);
-  if (!pts || isNaN(pts)) return;
+  if (!pts || isNaN(pts) || state.submitting) return;
 
   // 檢查重複
   if (!state.showDuplicate) {
+    state.submitting = true;
+    render();
     const dupResult = await apiCall('checkDuplicate', {
       name: state.selected.name,
       points: pts,
@@ -381,12 +384,15 @@ async function submitPoints() {
     });
     if (dupResult.isDuplicate) {
       state.showDuplicate = true;
+      state.submitting = false;
       render();
       return;
     }
   }
 
   // 送出
+  state.submitting = true;
+  render();
   const result = await apiCall('addPoints', {
     records: [{
       name: state.selected.name,
@@ -397,6 +403,7 @@ async function submitPoints() {
     }]
   });
 
+  state.submitting = false;
   if (result.success) {
     state.savedPoints = pts;
     state.savedName = state.selected.name;
@@ -405,6 +412,7 @@ async function submitPoints() {
     render();
   } else {
     showToast('儲存失敗，請重試');
+    render();
   }
 }
 
@@ -493,7 +501,7 @@ function renderList() {
   html += `
     <div class="toggle-bar">
       <div class="toggle-switch ${state.showAll ? 'active' : ''}" onclick="toggleShowAll()"></div>
-      <span class="toggle-label">顯示全部（含暫停、已離開）</span>
+      <span class="toggle-label">顯示全部</span>
     </div>
   `;
 
@@ -591,11 +599,14 @@ function renderDetail() {
   }
 
   // Submit
+  const canSubmit = hasValue && !state.submitting;
+  const btnLabel = state.submitting ? '處理中...' : (isNeg ? '確認扣點' : '確認加點');
   html += `
-    <button class="submit-btn ${hasValue ? 'active' : 'disabled'}"
-      onclick="${hasValue ? 'submitPoints()' : ''}"
-      ${hasValue ? '' : 'disabled'}>
-      ${isNeg ? '確認扣點' : '確認加點'}
+    <button class="submit-btn ${canSubmit ? 'active' : 'disabled'}"
+      onclick="${canSubmit ? 'submitPoints()' : ''}"
+      ${canSubmit ? '' : 'disabled'}>
+      ${state.submitting ? '<span style="display:inline-block;width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:6px"></span>' : ''}
+      ${btnLabel}
     </button>
   `;
 
