@@ -552,15 +552,11 @@ function renderList() {
 
   for (const s of state.students) {
     const inactive = s.status !== '在讀' ? 'inactive' : '';
-    let statusTag = '';
-    if (s.status === '暫停') statusTag = '<span class="student-status status-pause"></span>';
-    else if (s.status === '已離開') statusTag = '<span class="student-status status-left"></span>';
-
+    
     html += `
       <div class="student-item ${inactive}" onclick="selectStudent(${JSON.stringify(s).replace(/"/g, '&quot;')})">
         <div>
           <span class="student-name">${s.name}</span>
-          ${statusTag}
         </div>
         <div style="display:flex;align-items:center;gap:8px">
           <span class="student-points">${s.total}</span>
