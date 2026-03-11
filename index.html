@@ -501,7 +501,10 @@ let state = {
   ocrDate: todayStr(),
   ocrSaving: false,
   ocrSavedResults: [],
-  ocrPhotoCollapsed: false
+  ocrPhotoCollapsed: false,
+  ocrManualAdd: false,
+  ocrManualName: '',
+  ocrManualIsNew: false
 };
 
 function todayStr() {
@@ -1011,6 +1014,66 @@ function ocrUpdateDate(value) {
   state.ocrDate = value;
 }
 
+// ---- OCR 手動新增 ----
+function ocrShowManualAdd() {
+  state.ocrManualAdd = true;
+  state.ocrManualName = '';
+  state.ocrManualIsNew = false;
+  render();
+}
+
+function ocrManualSelectName(value) {
+  if (value === '__new__') {
+    state.ocrManualIsNew = true;
+    state.ocrManualName = '';
+    render();
+    setTimeout(() => {
+      const input = document.getElementById('ocr-manual-new-name');
+      if (input) input.focus();
+    }, 50);
+  } else {
+    state.ocrManualIsNew = false;
+    state.ocrManualName = value;
+  }
+}
+
+function ocrManualConfirm() {
+  const name = state.ocrManualName.trim();
+  if (!name) {
+    showToast('請選擇或輸入學生姓名');
+    return;
+  }
+
+  const ptsInput = document.getElementById('ocr-manual-points');
+  const pts = parseInt((ptsInput ? ptsInput.value : '').replace(/[^0-9\-]/g, ''));
+  if (isNaN(pts) || pts === 0) {
+    showToast('請輸入點數');
+    return;
+  }
+
+  const existingNames = state.allStudents.map(s => s.name);
+  const isNew = !existingNames.includes(name);
+
+  // 加入 ocrResults
+  state.ocrResults.push({
+    id: state.ocrResults.length,
+    name: name,
+    points: pts,
+    note: '',
+    isNew: isNew,
+    editing: false,
+    editingPoints: false,
+    showNote: false
+  });
+
+  // 重置手動新增表單
+  state.ocrManualAdd = false;
+  state.ocrManualName = '';
+  state.ocrManualIsNew = false;
+  render();
+  showToast(name + ' +' + pts + ' 已新增');
+}
+
 async function ocrConfirmSave() {
   if (state.ocrResults.length === 0 || state.ocrSaving) return;
   state.ocrSaving = true;
@@ -1054,6 +1117,9 @@ function ocrRetake() {
   state.photoData = null;
   state.photoPreview = null;
   state.ocrResults = [];
+  state.ocrManualAdd = false;
+  state.ocrManualName = '';
+  state.ocrManualIsNew = false;
   state.page = 'camera';
   render();
 }
@@ -1498,6 +1564,40 @@ function renderOCRConfirm() {
     html += '</div>';
 
     html += '</div>'; // ocr-card
+  }
+
+  // 手動新增按鈕 / 表單
+  if (state.ocrManualAdd) {
+    const allNames = state.allStudents.map(s => s.name);
+    html += `
+      <div class="ocr-card" style="border:2px solid #00B900">
+        <div style="font-size:13px;color:#888;font-weight:600;margin-bottom:8px">手動新增</div>
+        <div style="margin-bottom:8px">
+          <select class="ocr-name-select" id="ocr-manual-name" style="max-width:100%;width:100%" onchange="ocrManualSelectName(this.value)">
+            <option value="">-- 選擇學生 --</option>
+            ${allNames.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('')}
+            <option value="__new__">➕ 新同學（手動輸入）</option>
+          </select>
+        </div>
+        ${state.ocrManualIsNew ? `
+          <div style="margin-bottom:8px">
+            <input type="text" class="ocr-name-input" id="ocr-manual-new-name" style="max-width:100%;width:100%"
+              placeholder="輸入新同學姓名" oninput="state.ocrManualName=this.value">
+          </div>
+        ` : ''}
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <span style="font-size:13px;color:#888;font-weight:600;flex-shrink:0">點數</span>
+          <input type="text" inputmode="numeric" class="ocr-points-input" id="ocr-manual-points"
+            value="" placeholder="0" onfocus="this.select()" style="flex:0 0 72px">
+        </div>
+        <div class="add-student-btns">
+          <button class="add-student-confirm" onclick="ocrManualConfirm()">新增</button>
+          <button class="add-student-cancel" onclick="state.ocrManualAdd=false;render()">取消</button>
+        </div>
+      </div>
+    `;
+  } else {
+    html += `<button class="add-student-btn" onclick="ocrShowManualAdd()">＋ 手動新增</button>`;
   }
 
   // Summary
