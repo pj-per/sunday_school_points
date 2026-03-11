@@ -495,7 +495,8 @@ let state = {
   ocrResults: [],          // [{id, name, points, note, isNew, editing, editingPoints, showNote}]
   ocrDate: todayStr(),
   ocrSaving: false,
-  ocrSavedResults: []
+  ocrSavedResults: [],
+  ocrPhotoCollapsed: false
 };
 
 function todayStr() {
@@ -1394,6 +1395,24 @@ function renderOCRConfirm() {
   let html = '<div class="ocr-confirm-container">';
 
   html += `<button class="back-btn" onclick="ocrRetake()">← 重新拍照</button>`;
+
+  // 照片預覽（可收合）
+  if (state.photoPreview) {
+    html += `
+      <div style="margin-bottom:12px">
+        <div onclick="state.ocrPhotoCollapsed=!state.ocrPhotoCollapsed;render()" 
+          style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:4px 0">
+          <span style="font-size:13px;color:#888;font-weight:600">📷 原始照片</span>
+          <span style="font-size:12px;color:#aaa">${state.ocrPhotoCollapsed ? '▼ 展開' : '▲ 收合'}</span>
+        </div>
+        ${state.ocrPhotoCollapsed ? '' : `
+          <img src="${state.photoPreview}" alt="白板照片" style="
+            width:100%;border-radius:12px;margin-top:4px;
+            max-height:240px;object-fit:cover;border:1px solid #eee">
+        `}
+      </div>
+    `;
+  }
 
   // 統一日期欄（簡潔文字+底線樣式）
   html += `
