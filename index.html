@@ -321,6 +321,11 @@ async function loadStudents() {
   const result = await apiCall('getAllPoints', { filter });
 
   if (result.students) {
+    // 顯示全部時，依 在讀→暫停→已離開 排序，同狀態維持原順序
+    if (state.showAll) {
+      const order = { '在讀': 0, '暫停': 1, '已離開': 2 };
+      result.students.sort((a, b) => (order[a.status] ?? 9) - (order[b.status] ?? 9));
+    }
     state.students = result.students;
   }
   state.page = 'list';
@@ -552,7 +557,7 @@ function renderList() {
 
   for (const s of state.students) {
     const inactive = s.status !== '在讀' ? 'inactive' : '';
-    
+
     html += `
       <div class="student-item ${inactive}" onclick="selectStudent(${JSON.stringify(s).replace(/"/g, '&quot;')})">
         <div>
