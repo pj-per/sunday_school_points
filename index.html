@@ -224,24 +224,23 @@
       margin-top: 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
       border: 2px solid #00B900;
     }
-    .add-student-form-row {
-      display: flex; gap: 8px; align-items: center;
-    }
     .add-student-input {
-      flex: 1; padding: 10px 12px; border: 2px solid #e8eaed;
+      width: 100%; padding: 10px 12px; border: 2px solid #e8eaed;
       border-radius: 10px; font-size: 15px; font-weight: 600;
-      outline: none; font-family: inherit;
+      outline: none; font-family: inherit; margin-bottom: 10px;
     }
     .add-student-input:focus { border-color: #00B900; }
+    .add-student-btns {
+      display: flex; gap: 8px;
+    }
     .add-student-confirm {
-      padding: 10px 16px; border: none; border-radius: 10px;
+      flex: 1; padding: 10px 16px; border: none; border-radius: 10px;
       background: #00B900; color: #fff; font-size: 14px;
       font-weight: 700; cursor: pointer; font-family: inherit;
-      white-space: nowrap;
     }
     .add-student-confirm.disabled { background: #ccc; cursor: default; }
     .add-student-cancel {
-      padding: 10px 12px; border: none; border-radius: 10px;
+      flex: 1; padding: 10px 12px; border: none; border-radius: 10px;
       background: #f0f0f0; color: #888; font-size: 14px;
       font-weight: 600; cursor: pointer; font-family: inherit;
     }
@@ -440,8 +439,24 @@ const CONFIG = {
 // 從 URL 參數判斷模式：?mode=camera 或 ?mode=manage（預設）
 // ============================================================
 function getEntryMode() {
-  const params = new URLSearchParams(window.location.search);
-  return params.get('mode') || 'manage';
+  // LIFF 有時會把 query params 放在不同位置，需要多處檢查
+  // 1. 標準 query string: ?mode=camera
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('mode')) return urlParams.get('mode');
+
+  // 2. LIFF 可能把參數放在 hash 後面: #?mode=camera 或 liff.state
+  const hash = window.location.hash;
+  if (hash) {
+    const hashParams = new URLSearchParams(hash.replace(/^#\/?/, '').replace(/^\?/, ''));
+    if (hashParams.get('mode')) return hashParams.get('mode');
+  }
+
+  // 3. 檢查完整 URL（有些 LIFF 版本會把參數拼在路徑裡）
+  const fullUrl = window.location.href;
+  const modeMatch = fullUrl.match(/[?&]mode=(\w+)/);
+  if (modeMatch) return modeMatch[1];
+
+  return 'manage';
 }
 
 // ============================================================
@@ -549,6 +564,7 @@ async function initLiff() {
 // ============================================================
 async function afterInit() {
   state.entryMode = getEntryMode();
+  console.log('[點數系統] entryMode:', state.entryMode, '| URL:', window.location.href);
   state.page = 'loading';
   render();
 
@@ -586,20 +602,18 @@ async function loadStudents() {
   state.page = 'loading';
   render();
 
-  // 同時更新 allStudents（用於新增學生的名字比對）
-  const allResult = await apiCall('getAllPoints', { filter: 'all' });
-  if (allResult.students) {
-    state.allStudents = allResult.students;
-  }
+  // 載入全部學生（一次 API 呼叫，前端做篩選）
+  const result = await apiCall('getAllPoints', { filter: 'all' });
 
-  const filter = state.showAll ? 'all' : 'active';
-  if (state.showAll) {
-    // 顯示全部時，依 在讀→暫停→已離開 排序，同狀態維持原順序
-    const order = { '在讀': 0, '暫停': 1, '已離開': 2 };
-    const sorted = [...state.allStudents].sort((a, b) => (order[a.status] ?? 9) - (order[b.status] ?? 9));
-    state.students = sorted;
-  } else {
-    state.students = state.allStudents.filter(s => s.status === '在讀');
+  if (result.students) {
+    state.allStudents = result.students;
+
+    if (state.showAll) {
+      const order = { '在讀': 0, '暫停': 1, '已離開': 2 };
+      state.students = [...result.students].sort((a, b) => (order[a.status] ?? 9) - (order[b.status] ?? 9));
+    } else {
+      state.students = result.students.filter(s => s.status === '在讀');
+    }
   }
   state.page = 'list';
   render();
@@ -1158,14 +1172,14 @@ function renderList() {
   if (state.showAddStudent) {
     html += `
       <div class="add-student-form">
-        <div class="add-student-form-row">
-          <input type="text" class="add-student-input" id="new-student-input"
-            value="${escapeHtml(state.newStudentName)}" placeholder="輸入學生姓名"
-            oninput="onNewStudentInput(this)"
-            onkeydown="if(event.key==='Enter')confirmAddStudent()">
+        <input type="text" class="add-student-input" id="new-student-input"
+          value="${escapeHtml(state.newStudentName)}" placeholder="輸入學生姓名"
+          oninput="onNewStudentInput(this)"
+          onkeydown="if(event.key==='Enter')confirmAddStudent()">
+        <div class="add-student-btns">
           <button id="add-student-confirm-btn" class="add-student-confirm ${state.newStudentName.trim() && !state.addingStudent ? '' : 'disabled'}" 
             onclick="confirmAddStudent()" ${state.newStudentName.trim() && !state.addingStudent ? '' : 'disabled'}>
-            ${state.addingStudent ? '...' : '新增'}
+            ${state.addingStudent ? '處理中...' : '確認新增'}
           </button>
           <button class="add-student-cancel" onclick="hideAddStudentForm()">取消</button>
         </div>
