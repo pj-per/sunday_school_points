@@ -357,9 +357,14 @@
       cursor: pointer; border-bottom: 1px dashed #aaa; padding: 0 4px;
     }
     .ocr-points-input {
-      width: 70px; font-size: 20px; font-weight: 800;
+      width: 72px; font-size: 20px; font-weight: 800;
       text-align: center; font-family: inherit;
-      border: 2px solid #00B900; border-radius: 8px; padding: 4px; outline: none;
+      border: 1px dashed #ccc; border-radius: 8px;
+      padding: 6px 4px; outline: none; color: #00B900;
+      background: transparent;
+    }
+    .ocr-points-input:focus {
+      border: 2px solid #00B900; background: #fff;
     }
     .ocr-note-area { margin-top: 8px; }
     .ocr-note-toggle {
@@ -1467,20 +1472,13 @@ function renderOCRConfirm() {
 
     // Right: points + delete
     html += '<div style="display:flex;align-items:center">';
-    if (item.editingPoints) {
-      html += `
-        <input type="text" inputmode="numeric" class="ocr-points-input" id="ocr-pts-input-${i}"
-          value="${item.points}"
-          oninput="ocrUpdatePoints(${i}, this.value)"
-          onblur="ocrFinishPointsEdit(${i})">
-      `;
-    } else {
-      html += `
-        <span class="ocr-points-display" onclick="ocrEditPoints(${i})">
-          ${item.points > 0 ? '+' : ''}${item.points}
-        </span>
-      `;
-    }
+    html += `
+      <input type="text" inputmode="numeric" class="ocr-points-input" id="ocr-pts-input-${i}"
+        value="${item.points > 0 ? '+' + item.points : item.points}"
+        onfocus="this.select()"
+        oninput="ocrUpdatePoints(${i}, this.value)"
+        style="color:#00B900">
+    `;
     html += `<button class="ocr-delete-btn" onclick="ocrDeleteCard(${i})">✕</button>`;
     html += '</div>';
 
