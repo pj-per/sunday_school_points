@@ -208,11 +208,222 @@
       from { opacity: 0; transform: translateX(-50%) translateY(10px); }
       to { opacity: 1; transform: translateX(-50%) translateY(0); }
     }
+
+    /* ============================================================
+       新增學生
+       ============================================================ */
+    .add-student-btn {
+      width: 100%; padding: 12px 16px; margin-top: 4px;
+      background: none; border: 2px dashed #ccc; border-radius: 14px;
+      font-size: 14px; font-weight: 600; color: #888;
+      cursor: pointer; font-family: inherit; transition: border-color 0.2s;
+    }
+    .add-student-btn:active { border-color: #00B900; color: #00B900; }
+    .add-student-form {
+      background: #fff; border-radius: 14px; padding: 14px 16px;
+      margin-top: 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      border: 2px solid #00B900;
+    }
+    .add-student-form-row {
+      display: flex; gap: 8px; align-items: center;
+    }
+    .add-student-input {
+      flex: 1; padding: 10px 12px; border: 2px solid #e8eaed;
+      border-radius: 10px; font-size: 15px; font-weight: 600;
+      outline: none; font-family: inherit;
+    }
+    .add-student-input:focus { border-color: #00B900; }
+    .add-student-confirm {
+      padding: 10px 16px; border: none; border-radius: 10px;
+      background: #00B900; color: #fff; font-size: 14px;
+      font-weight: 700; cursor: pointer; font-family: inherit;
+      white-space: nowrap;
+    }
+    .add-student-confirm.disabled { background: #ccc; cursor: default; }
+    .add-student-cancel {
+      padding: 10px 12px; border: none; border-radius: 10px;
+      background: #f0f0f0; color: #888; font-size: 14px;
+      font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+
+    /* ============================================================
+       Phase 2: 拍照記點 styles
+       ============================================================ */
+
+    /* Camera page */
+    .camera-container { padding: 16px; }
+    .camera-preview {
+      width: 100%; aspect-ratio: 4/3; background: #e8eaed;
+      border-radius: 16px; display: flex; align-items: center;
+      justify-content: center; overflow: hidden; margin-bottom: 16px;
+    }
+    .camera-preview img {
+      width: 100%; height: 100%; object-fit: cover; border-radius: 16px;
+    }
+    .camera-placeholder {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 8px; color: #aaa;
+    }
+    .camera-placeholder-icon { font-size: 48px; }
+    .camera-placeholder-text { font-size: 14px; }
+    .camera-btns { display: flex; gap: 10px; }
+    .camera-btn {
+      flex: 1; padding: 14px 0; border: none; border-radius: 12px;
+      font-size: 15px; font-weight: 700; cursor: pointer;
+      font-family: inherit; transition: opacity 0.2s;
+    }
+    .camera-btn-capture {
+      background: #00B900; color: #fff;
+      box-shadow: 0 4px 12px rgba(0,185,0,0.3);
+    }
+    .camera-btn-album {
+      background: #fff; color: #1a1a2e; border: 2px solid #e8eaed;
+    }
+    .camera-btn-analyze {
+      background: #1565c0; color: #fff;
+      box-shadow: 0 4px 12px rgba(21,101,192,0.3);
+      width: 100%; margin-top: 10px;
+    }
+    .camera-btn-analyze.disabled {
+      background: #ccc; box-shadow: none; cursor: default;
+    }
+
+    /* OCR loading */
+    .ocr-loading {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 60px 20px; gap: 16px;
+    }
+    .ocr-loading-icon {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: #e3f2fd; display: flex; align-items: center;
+      justify-content: center; font-size: 28px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+    }
+    .ocr-loading-text { font-size: 15px; color: #555; font-weight: 600; }
+    .ocr-loading-sub { font-size: 13px; color: #aaa; }
+
+    /* OCR confirm */
+    .ocr-confirm-container { padding: 16px; }
+    .ocr-date-bar {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 16px; padding-bottom: 8px;
+      border-bottom: 2px solid #e8eaed;
+    }
+    .ocr-date-label { font-size: 14px; color: #888; font-weight: 600; }
+    .ocr-date-input {
+      font-size: 15px; font-weight: 700; color: #1a1a2e;
+      border: none; outline: none; font-family: inherit;
+      background: transparent; border-bottom: 1px dashed #aaa;
+      padding: 2px 4px;
+    }
+
+    .ocr-card {
+      background: #fff; border-radius: 14px; padding: 14px 16px;
+      margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      border: 1px solid #eee;
+    }
+    .ocr-card.new-student { border-left: 4px solid #e65100; }
+    .ocr-card-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    }
+    .ocr-card-left { flex: 1; min-width: 0; }
+
+    .ocr-name-display {
+      display: inline-flex; align-items: center; gap: 4px;
+      cursor: pointer; font-size: 16px; font-weight: 700;
+      border-bottom: 1px dashed #aaa; padding-bottom: 1px;
+    }
+    .ocr-name-display .edit-icon { font-size: 12px; color: #aaa; }
+    .ocr-name-select {
+      font-size: 15px; font-weight: 700; font-family: inherit;
+      border: 2px solid #00B900; border-radius: 8px; padding: 6px 8px;
+      outline: none; background: #fff; max-width: 160px;
+    }
+    .ocr-name-input {
+      font-size: 15px; font-weight: 700; font-family: inherit;
+      border: 2px solid #e65100; border-radius: 8px; padding: 6px 8px;
+      outline: none; max-width: 160px;
+    }
+    .new-badge {
+      display: inline-block; font-size: 10px; font-weight: 700;
+      background: #fff3e0; color: #e65100; padding: 2px 6px;
+      border-radius: 4px; margin-left: 6px;
+    }
+    .ocr-points-display {
+      font-size: 22px; font-weight: 800; color: #00B900;
+      cursor: pointer; border-bottom: 1px dashed #aaa; padding: 0 4px;
+    }
+    .ocr-points-input {
+      width: 70px; font-size: 20px; font-weight: 800;
+      text-align: center; font-family: inherit;
+      border: 2px solid #00B900; border-radius: 8px; padding: 4px; outline: none;
+    }
+    .ocr-note-area { margin-top: 8px; }
+    .ocr-note-toggle {
+      font-size: 12px; color: #aaa; cursor: pointer;
+      background: none; border: none; font-family: inherit; padding: 2px 0;
+    }
+    .ocr-note-toggle:hover { color: #555; }
+    .ocr-note-input {
+      width: 100%; font-size: 13px; font-family: inherit;
+      border: 1px solid #e8eaed; border-radius: 8px;
+      padding: 8px 10px; outline: none; margin-top: 4px;
+    }
+    .ocr-note-input:focus { border-color: #00B900; }
+    .ocr-delete-btn {
+      background: none; border: none; font-size: 18px;
+      color: #ccc; cursor: pointer; padding: 4px; margin-left: 8px;
+    }
+    .ocr-delete-btn:hover { color: #e53935; }
+
+    .ocr-summary {
+      background: #fff; border-radius: 14px; padding: 14px 16px;
+      margin: 16px 0 12px; text-align: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .ocr-summary-text { font-size: 14px; color: #555; }
+    .ocr-summary-count { font-weight: 800; color: #00B900; }
+
+    .ocr-confirm-btn {
+      width: 100%; padding: 14px 0; border: none; border-radius: 12px;
+      font-size: 16px; font-weight: 700; cursor: pointer;
+      font-family: inherit; background: #00B900; color: #fff;
+      box-shadow: 0 4px 12px rgba(0,185,0,0.3);
+    }
+    .ocr-confirm-btn.disabled { background: #ccc; box-shadow: none; cursor: default; }
+    .ocr-retake-btn {
+      width: 100%; padding: 12px 0; border: 1px solid #ddd;
+      border-radius: 12px; font-size: 14px; font-weight: 600;
+      color: #888; cursor: pointer; font-family: inherit;
+      background: none; margin-top: 8px;
+    }
+
+    .ocr-success-container {
+      padding: 24px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      min-height: 400px; gap: 16px;
+    }
+    .ocr-success-list { width: 100%; max-width: 320px; }
+    .ocr-success-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0; border-bottom: 1px solid #f0f0f0;
+    }
+    .ocr-success-name { font-size: 14px; font-weight: 600; }
+    .ocr-success-pts { font-size: 16px; font-weight: 800; color: #00B900; }
+    .ocr-new-tag { font-size: 10px; color: #e65100; font-weight: 600; }
   </style>
 </head>
 <body>
 
 <div id="app"></div>
+
+<!-- Phase 2: Hidden file inputs -->
+<input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none">
+<input type="file" id="album-input" accept="image/*" style="display:none">
 
 <script>
 // ============================================================
@@ -226,11 +437,21 @@ const CONFIG = {
 };
 
 // ============================================================
+// 從 URL 參數判斷模式：?mode=camera 或 ?mode=manage（預設）
+// ============================================================
+function getEntryMode() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('mode') || 'manage';
+}
+
+// ============================================================
 // 狀態管理
 // ============================================================
 let state = {
-  page: 'loading',       // loading, list, detail, success
+  page: 'loading',       // loading, list, detail, success, camera, ocr-loading, ocr-confirm, ocr-success
+  entryMode: 'manage',   // 'camera' or 'manage'
   students: [],
+  allStudents: [],        // 全部學生快取（含暫停/已離開，用於名字比對）
   showAll: false,
   selected: null,         // { id, name, status, total }
   points: '',
@@ -246,7 +467,20 @@ let state = {
   toast: '',
   submitting: false,       // 防止重複送出
   pointsMode: 'add',      // 'add' or 'subtract'
-  pointsAbs: ''            // 絕對值（不含正負號）
+  pointsAbs: '',           // 絕對值（不含正負號）
+
+  // 新增學生
+  showAddStudent: false,
+  newStudentName: '',
+  addingStudent: false,
+
+  // Phase 2: 拍照記點
+  photoData: null,         // base64 image
+  photoPreview: null,      // blob URL for preview
+  ocrResults: [],          // [{id, name, points, note, isNew, editing, editingPoints, showNote}]
+  ocrDate: todayStr(),
+  ocrSaving: false,
+  ocrSavedResults: []
 };
 
 function todayStr() {
@@ -307,7 +541,42 @@ async function initLiff() {
     console.log('LIFF init skipped (dev mode):', err);
     state.userName = '測試老師';
   }
-  loadStudents();
+  afterInit();
+}
+
+// ============================================================
+// 初始化完成：根據 URL 參數決定進入哪個功能
+// ============================================================
+async function afterInit() {
+  state.entryMode = getEntryMode();
+  state.page = 'loading';
+  render();
+
+  // 兩種模式都先載入學生名單（camera 模式需要用來比對 OCR 結果）
+  const result = await apiCall('getAllPoints', { filter: 'all' });
+  if (result.students) {
+    state.allStudents = result.students;
+    state.students = result.students;
+  }
+
+  if (state.entryMode === 'camera') {
+    // 拍照記點：直接進入拍照畫面
+    state.photoData = null;
+    state.photoPreview = null;
+    state.ocrResults = [];
+    state.ocrDate = todayStr();
+    state.page = 'camera';
+  } else {
+    // 點數管理：進入學生列表（套用篩選和排序）
+    if (state.showAll) {
+      const order = { '在讀': 0, '暫停': 1, '已離開': 2 };
+      state.students.sort((a, b) => (order[a.status] ?? 9) - (order[b.status] ?? 9));
+    } else {
+      state.students = state.students.filter(s => s.status === '在讀');
+    }
+    state.page = 'list';
+  }
+  render();
 }
 
 // ============================================================
@@ -317,16 +586,20 @@ async function loadStudents() {
   state.page = 'loading';
   render();
 
-  const filter = state.showAll ? 'all' : 'active';
-  const result = await apiCall('getAllPoints', { filter });
+  // 同時更新 allStudents（用於新增學生的名字比對）
+  const allResult = await apiCall('getAllPoints', { filter: 'all' });
+  if (allResult.students) {
+    state.allStudents = allResult.students;
+  }
 
-  if (result.students) {
+  const filter = state.showAll ? 'all' : 'active';
+  if (state.showAll) {
     // 顯示全部時，依 在讀→暫停→已離開 排序，同狀態維持原順序
-    if (state.showAll) {
-      const order = { '在讀': 0, '暫停': 1, '已離開': 2 };
-      result.students.sort((a, b) => (order[a.status] ?? 9) - (order[b.status] ?? 9));
-    }
-    state.students = result.students;
+    const order = { '在讀': 0, '暫停': 1, '已離開': 2 };
+    const sorted = [...state.allStudents].sort((a, b) => (order[a.status] ?? 9) - (order[b.status] ?? 9));
+    state.students = sorted;
+  } else {
+    state.students = state.allStudents.filter(s => s.status === '在讀');
   }
   state.page = 'list';
   render();
@@ -341,7 +614,7 @@ async function loadRecords(name) {
 }
 
 // ============================================================
-// 操作
+// 點數管理操作（Phase 1 - 保持你的最新版本不變）
 // ============================================================
 function selectStudent(student) {
   state.selected = student;
@@ -481,6 +754,297 @@ function continuAfterSuccess() {
   loadStudents();
 }
 
+// ============================================================
+// 新增學生
+// ============================================================
+function showAddStudentForm() {
+  state.showAddStudent = true;
+  state.newStudentName = '';
+  render();
+  setTimeout(() => {
+    const input = document.getElementById('new-student-input');
+    if (input) input.focus();
+  }, 50);
+}
+
+function hideAddStudentForm() {
+  state.showAddStudent = false;
+  state.newStudentName = '';
+  render();
+}
+
+function onNewStudentInput(el) {
+  state.newStudentName = el.value;
+  // 即時更新確認按鈕狀態
+  const btn = document.getElementById('add-student-confirm-btn');
+  if (btn) {
+    const hasName = state.newStudentName.trim().length > 0;
+    btn.className = 'add-student-confirm ' + (hasName && !state.addingStudent ? '' : 'disabled');
+    btn.disabled = !hasName || state.addingStudent;
+  }
+}
+
+async function confirmAddStudent() {
+  const name = state.newStudentName.trim();
+  if (!name || state.addingStudent) return;
+
+  // 防呆：比對全部學生名單（含暫停/已離開）
+  const existing = state.allStudents.find(s => s.name === name);
+  if (existing) {
+    if (existing.status === '在讀') {
+      showToast('「' + name + '」已在列表中');
+    } else {
+      // 學生存在但被篩選隱藏了
+      showToast('「' + name + '」已存在（狀態：' + existing.status + '），請開啟「顯示全部」查看');
+    }
+    return;
+  }
+
+  state.addingStudent = true;
+  render();
+
+  const result = await apiCall('addStudent', { name });
+
+  state.addingStudent = false;
+  if (result.success) {
+    showToast(name + ' 已新增');
+    state.showAddStudent = false;
+    state.newStudentName = '';
+    loadStudents(); // 重新載入列表
+  } else if (result.message) {
+    showToast(result.message);
+    render();
+  } else {
+    showToast('新增失敗，請重試');
+    render();
+  }
+}
+
+// ============================================================
+// Phase 2: 拍照記點
+// ============================================================
+
+function openCamera() {
+  document.getElementById('camera-input').click();
+}
+
+function openAlbum() {
+  document.getElementById('album-input').click();
+}
+
+function handleImageSelect(inputEl) {
+  const file = inputEl.files[0];
+  if (!file) return;
+  compressImage(file, (base64) => {
+    state.photoData = base64;
+    state.photoPreview = URL.createObjectURL(file);
+    render();
+  });
+  inputEl.value = '';
+}
+
+function compressImage(file, callback) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const MAX_WIDTH = 1600;
+      const MAX_HEIGHT = 1200;
+      let w = img.width, h = img.height;
+      if (w > MAX_WIDTH) { h = h * MAX_WIDTH / w; w = MAX_WIDTH; }
+      if (h > MAX_HEIGHT) { w = w * MAX_HEIGHT / h; h = MAX_HEIGHT; }
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      callback(canvas.toDataURL('image/jpeg', 0.85).split(',')[1]);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function startOCR() {
+  if (!state.photoData) return;
+  state.page = 'ocr-loading';
+  render();
+
+  try {
+    const result = await apiCall('ocrPhoto', { image: state.photoData });
+
+    if (result.error) {
+      showToast('辨識失敗：' + result.error);
+      state.page = 'camera';
+      render();
+      return;
+    }
+
+    const ocrItems = result.results || [];
+    const existingNames = state.students.map(s => s.name);
+
+    state.ocrResults = ocrItems.map((item, idx) => ({
+      id: idx,
+      name: item.name,
+      points: item.points,
+      note: item.note || '',
+      isNew: !existingNames.includes(item.name),
+      editing: false,
+      editingPoints: false,
+      showNote: !!(item.note)
+    }));
+
+    state.ocrDate = todayStr();
+    state.page = 'ocr-confirm';
+    render();
+  } catch (err) {
+    console.error('OCR error:', err);
+    showToast('辨識過程發生錯誤');
+    state.page = 'camera';
+    render();
+  }
+}
+
+// ---- OCR 結果編輯 ----
+function ocrEditName(idx) {
+  state.ocrResults[idx].editing = true;
+  render();
+  setTimeout(() => {
+    const sel = document.getElementById('ocr-name-select-' + idx);
+    if (sel) sel.focus();
+  }, 50);
+}
+
+function ocrSelectName(idx, value) {
+  const item = state.ocrResults[idx];
+  if (value === '__new__') {
+    item.isNew = true;
+    item.name = '';
+    render();
+    setTimeout(() => {
+      const input = document.getElementById('ocr-name-input-' + idx);
+      if (input) input.focus();
+    }, 50);
+  } else {
+    item.name = value;
+    item.isNew = false;
+    item.editing = false;
+    render();
+  }
+}
+
+function ocrInputName(idx, value) {
+  const item = state.ocrResults[idx];
+  item.name = value;
+  item.isNew = !state.students.some(s => s.name === value);
+}
+
+function ocrFinishNameEdit(idx) {
+  setTimeout(() => {
+    if (state.ocrResults[idx]) {
+      state.ocrResults[idx].editing = false;
+      render();
+    }
+  }, 200);
+}
+
+function ocrEditPoints(idx) {
+  state.ocrResults[idx].editingPoints = true;
+  render();
+  setTimeout(() => {
+    const input = document.getElementById('ocr-pts-input-' + idx);
+    if (input) { input.focus(); input.select(); }
+  }, 50);
+}
+
+function ocrUpdatePoints(idx, value) {
+  const num = parseInt(value.replace(/[^0-9\-]/g, ''));
+  if (!isNaN(num)) state.ocrResults[idx].points = num;
+}
+
+function ocrFinishPointsEdit(idx) {
+  state.ocrResults[idx].editingPoints = false;
+  render();
+}
+
+function ocrToggleNote(idx) {
+  state.ocrResults[idx].showNote = !state.ocrResults[idx].showNote;
+  render();
+  if (state.ocrResults[idx].showNote) {
+    setTimeout(() => {
+      const input = document.getElementById('ocr-note-input-' + idx);
+      if (input) input.focus();
+    }, 50);
+  }
+}
+
+function ocrUpdateNote(idx, value) {
+  state.ocrResults[idx].note = value;
+}
+
+function ocrDeleteCard(idx) {
+  state.ocrResults.splice(idx, 1);
+  state.ocrResults.forEach((item, i) => item.id = i);
+  render();
+}
+
+function ocrUpdateDate(value) {
+  state.ocrDate = value;
+}
+
+async function ocrConfirmSave() {
+  if (state.ocrResults.length === 0 || state.ocrSaving) return;
+  state.ocrSaving = true;
+  render();
+
+  // 1. 先建立新同學
+  for (const r of state.ocrResults.filter(r => r.isNew && r.name.trim())) {
+    await apiCall('addStudent', { name: r.name.trim() });
+  }
+
+  // 2. 批次新增點數
+  const records = state.ocrResults
+    .filter(r => r.name.trim() && r.points !== 0)
+    .map(r => ({
+      name: r.name.trim(),
+      points: r.points,
+      date: state.ocrDate,
+      note: r.note || '',
+      recorded_by: state.userName
+    }));
+
+  if (records.length > 0) {
+    const result = await apiCall('addPoints', { records });
+    if (!result.success) {
+      showToast('儲存失敗，請重試');
+      state.ocrSaving = false;
+      render();
+      return;
+    }
+  }
+
+  state.ocrSavedResults = state.ocrResults.map(r => ({
+    name: r.name, points: r.points, isNew: r.isNew, note: r.note
+  }));
+  state.ocrSaving = false;
+  state.page = 'ocr-success';
+  render();
+}
+
+function ocrRetake() {
+  state.photoData = null;
+  state.photoPreview = null;
+  state.ocrResults = [];
+  state.page = 'camera';
+  render();
+}
+
+function ocrDone() {
+  closeLiff();
+}
+
+// ============================================================
+// 工具
+// ============================================================
 function showToast(msg) {
   state.toast = msg;
   render();
@@ -493,6 +1057,11 @@ function closeLiff() {
   }
 }
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 // ============================================================
 // 渲染
 // ============================================================
@@ -500,11 +1069,12 @@ function render() {
   const app = document.getElementById('app');
   let html = '';
 
-  // Header
+  // Header：根據模式顯示不同標題
+  const headerTitle = state.entryMode === 'camera' ? '📷 拍照記點' : '📋 點數管理';
   html += `
     <div class="header">
       <button class="header-btn" onclick="closeLiff()">✕ 關閉</button>
-      <span class="header-title">📋 點數管理</span>
+      <span class="header-title">${headerTitle}</span>
       <div style="width:40px"></div>
     </div>
   `;
@@ -521,6 +1091,19 @@ function render() {
       break;
     case 'success':
       html += renderSuccess();
+      break;
+    // Phase 2
+    case 'camera':
+      html += renderCamera();
+      break;
+    case 'ocr-loading':
+      html += renderOCRLoading();
+      break;
+    case 'ocr-confirm':
+      html += renderOCRConfirm();
+      break;
+    case 'ocr-success':
+      html += renderOCRSuccess();
       break;
   }
 
@@ -569,6 +1152,27 @@ function renderList() {
         </div>
       </div>
     `;
+  }
+
+  // 新增學生按鈕 / 表單
+  if (state.showAddStudent) {
+    html += `
+      <div class="add-student-form">
+        <div class="add-student-form-row">
+          <input type="text" class="add-student-input" id="new-student-input"
+            value="${escapeHtml(state.newStudentName)}" placeholder="輸入學生姓名"
+            oninput="onNewStudentInput(this)"
+            onkeydown="if(event.key==='Enter')confirmAddStudent()">
+          <button id="add-student-confirm-btn" class="add-student-confirm ${state.newStudentName.trim() && !state.addingStudent ? '' : 'disabled'}" 
+            onclick="confirmAddStudent()" ${state.newStudentName.trim() && !state.addingStudent ? '' : 'disabled'}>
+            ${state.addingStudent ? '...' : '新增'}
+          </button>
+          <button class="add-student-cancel" onclick="hideAddStudentForm()">取消</button>
+        </div>
+      </div>
+    `;
+  } else {
+    html += `<button class="add-student-btn" onclick="showAddStudentForm()">＋ 新增學生</button>`;
   }
 
   html += '</div>';
@@ -721,15 +1325,233 @@ function renderSuccess() {
 }
 
 // ============================================================
+// Phase 2 渲染
+// ============================================================
+function renderCamera() {
+  let html = '<div class="camera-container">';
+
+  html += '<div class="camera-preview">';
+  if (state.photoPreview) {
+    html += `<img src="${state.photoPreview}" alt="預覽">`;
+  } else {
+    html += `
+      <div class="camera-placeholder">
+        <div class="camera-placeholder-icon">📷</div>
+        <div class="camera-placeholder-text">拍攝白板或選擇照片</div>
+      </div>
+    `;
+  }
+  html += '</div>';
+
+  html += `
+    <div class="camera-btns">
+      <button class="camera-btn camera-btn-capture" onclick="openCamera()">📷 拍照</button>
+      <button class="camera-btn camera-btn-album" onclick="openAlbum()">🖼 相簿</button>
+    </div>
+  `;
+
+  const hasPhoto = !!state.photoData;
+  html += `
+    <button class="camera-btn camera-btn-analyze ${hasPhoto ? '' : 'disabled'}" 
+      onclick="${hasPhoto ? 'startOCR()' : ''}" ${hasPhoto ? '' : 'disabled'}>
+      🤖 開始辨識
+    </button>
+  `;
+
+  if (hasPhoto) {
+    html += `<div style="text-align:center;margin-top:8px"><span style="font-size:12px;color:#aaa">照片已就緒，點擊「開始辨識」</span></div>`;
+  }
+
+  html += '</div>';
+  return html;
+}
+
+function renderOCRLoading() {
+  return `
+    <div class="ocr-loading">
+      <div class="ocr-loading-icon">🤖</div>
+      <div class="ocr-loading-text">AI 辨識中...</div>
+      <div class="ocr-loading-sub">正在分析白板上的名字和點數</div>
+      <div class="spinner"></div>
+    </div>
+  `;
+}
+
+function renderOCRConfirm() {
+  let html = '<div class="ocr-confirm-container">';
+
+  html += `<button class="back-btn" onclick="ocrRetake()">← 重新拍照</button>`;
+
+  // 統一日期欄（簡潔文字+底線樣式）
+  html += `
+    <div class="ocr-date-bar">
+      <span class="ocr-date-label">日期</span>
+      <input type="date" class="ocr-date-input" value="${state.ocrDate}" onchange="ocrUpdateDate(this.value)">
+    </div>
+  `;
+
+  const allStudentNames = state.students.map(s => s.name);
+
+  for (let i = 0; i < state.ocrResults.length; i++) {
+    const item = state.ocrResults[i];
+    html += `<div class="ocr-card ${item.isNew ? 'new-student' : ''}">`;
+    html += '<div class="ocr-card-row">';
+
+    // Left: name
+    html += '<div class="ocr-card-left">';
+    if (item.editing) {
+      if (item.isNew && item.name === '') {
+        // 新同學：文字輸入
+        html += `
+          <input type="text" class="ocr-name-input" id="ocr-name-input-${i}"
+            value="${escapeHtml(item.name)}" 
+            oninput="ocrInputName(${i}, this.value)"
+            onblur="ocrFinishNameEdit(${i})"
+            placeholder="輸入姓名">
+        `;
+      } else {
+        // 現有學生：下拉選單
+        html += `<select class="ocr-name-select" id="ocr-name-select-${i}" onchange="ocrSelectName(${i}, this.value)" onblur="ocrFinishNameEdit(${i})">`;
+        html += `<option value="">-- 選擇學生 --</option>`;
+        for (const n of allStudentNames) {
+          const sel = n === item.name ? 'selected' : '';
+          html += `<option value="${escapeHtml(n)}" ${sel}>${escapeHtml(n)}</option>`;
+        }
+        html += `<option value="__new__">➕ 新同學（手動輸入）</option>`;
+        html += '</select>';
+      }
+    } else {
+      // 顯示名字（虛線底線 + ✏️）
+      html += `
+        <span class="ocr-name-display" onclick="ocrEditName(${i})">
+          ${escapeHtml(item.name)} <span class="edit-icon">✏️</span>
+        </span>
+      `;
+    }
+    if (item.isNew) {
+      html += '<span class="new-badge">新同學</span>';
+    }
+    html += '</div>';
+
+    // Right: points + delete
+    html += '<div style="display:flex;align-items:center">';
+    if (item.editingPoints) {
+      html += `
+        <input type="text" inputmode="numeric" class="ocr-points-input" id="ocr-pts-input-${i}"
+          value="${item.points}"
+          oninput="ocrUpdatePoints(${i}, this.value)"
+          onblur="ocrFinishPointsEdit(${i})">
+      `;
+    } else {
+      html += `
+        <span class="ocr-points-display" onclick="ocrEditPoints(${i})">
+          ${item.points > 0 ? '+' : ''}${item.points}
+        </span>
+      `;
+    }
+    html += `<button class="ocr-delete-btn" onclick="ocrDeleteCard(${i})">✕</button>`;
+    html += '</div>';
+
+    html += '</div>'; // ocr-card-row
+
+    // 備註：已有備註直接顯示，無備註顯示「＋備註」
+    html += '<div class="ocr-note-area">';
+    if (item.showNote || item.note) {
+      html += `
+        <input type="text" class="ocr-note-input" id="ocr-note-input-${i}"
+          value="${escapeHtml(item.note)}" placeholder="輸入備註"
+          oninput="ocrUpdateNote(${i}, this.value)">
+      `;
+    } else {
+      html += `<button class="ocr-note-toggle" onclick="ocrToggleNote(${i})">＋ 備註</button>`;
+    }
+    html += '</div>';
+
+    html += '</div>'; // ocr-card
+  }
+
+  // Summary
+  const totalStudents = state.ocrResults.length;
+  const totalPoints = state.ocrResults.reduce((sum, r) => sum + r.points, 0);
+  const newCount = state.ocrResults.filter(r => r.isNew).length;
+  html += `
+    <div class="ocr-summary">
+      <div class="ocr-summary-text">
+        共 <span class="ocr-summary-count">${totalStudents}</span> 位學生，
+        合計 <span class="ocr-summary-count">${totalPoints}</span> 點
+        ${newCount > 0 ? `（含 <span style="color:#e65100;font-weight:700">${newCount}</span> 位新同學）` : ''}
+      </div>
+    </div>
+  `;
+
+  const canSave = totalStudents > 0 && !state.ocrSaving;
+  html += `
+    <button class="ocr-confirm-btn ${canSave ? '' : 'disabled'}" 
+      onclick="${canSave ? 'ocrConfirmSave()' : ''}" ${canSave ? '' : 'disabled'}>
+      ${state.ocrSaving ? '儲存中...' : '✓ 確認送出'}
+    </button>
+    <button class="ocr-retake-btn" onclick="ocrRetake()">📷 重新拍照</button>
+  `;
+
+  html += '</div>';
+  return html;
+}
+
+function renderOCRSuccess() {
+  const results = state.ocrSavedResults;
+  const totalPts = results.reduce((sum, r) => sum + r.points, 0);
+  const newCount = results.filter(r => r.isNew).length;
+
+  let html = `
+    <div class="ocr-success-container">
+      <div class="success-icon positive">✓</div>
+      <div class="success-title positive">記點完成！</div>
+      <div class="success-detail">
+        已為 ${results.length} 位學生記錄點數
+        ${newCount > 0 ? `（含 ${newCount} 位新同學已自動建檔）` : ''}
+      </div>
+      <div class="ocr-success-list">
+  `;
+
+  for (const r of results) {
+    html += `
+      <div class="ocr-success-item">
+        <div>
+          <span class="ocr-success-name">${escapeHtml(r.name)}</span>
+          ${r.isNew ? '<span class="ocr-new-tag"> 新</span>' : ''}
+          ${r.note ? `<div style="font-size:11px;color:#aaa">${escapeHtml(r.note)}</div>` : ''}
+        </div>
+        <span class="ocr-success-pts">${r.points > 0 ? '+' : ''}${r.points}</span>
+      </div>
+    `;
+  }
+
+  html += `
+      </div>
+      <div style="font-size:13px;color:#999">合計 ${totalPts} 點</div>
+      <div style="display:flex;gap:10px;margin-top:16px;width:100%;max-width:320px">
+        <button class="continue-btn" style="flex:1" onclick="ocrRetake()">繼續拍照</button>
+        <button class="continue-btn" style="flex:1;background:#555" onclick="ocrDone()">完成</button>
+      </div>
+    </div>
+  `;
+  return html;
+}
+
+// ============================================================
 // 初始化
 // ============================================================
 function startApp() {
+  // 綁定 file input 事件
+  document.getElementById('camera-input').addEventListener('change', function() { handleImageSelect(this); });
+  document.getElementById('album-input').addEventListener('change', function() { handleImageSelect(this); });
+
   if (typeof liff !== 'undefined') {
     initLiff();
   } else {
     // 開發測試模式：直接載入
     state.userName = '測試老師';
-    loadStudents();
+    afterInit();
   }
 }
 </script>
