@@ -1396,19 +1396,19 @@ function renderOCRConfirm() {
 
   html += `<button class="back-btn" onclick="ocrRetake()">← 重新拍照</button>`;
 
-  // 照片預覽（可收合）
+  // 照片預覽（預設收合，點擊展開看完整照片）
   if (state.photoPreview) {
     html += `
       <div style="margin-bottom:12px">
         <div onclick="state.ocrPhotoCollapsed=!state.ocrPhotoCollapsed;render()" 
-          style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:4px 0">
+          style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:6px 0">
           <span style="font-size:13px;color:#888;font-weight:600">📷 原始照片</span>
-          <span style="font-size:12px;color:#aaa">${state.ocrPhotoCollapsed ? '▼ 展開' : '▲ 收合'}</span>
+          <span style="font-size:12px;color:#00B900;font-weight:600">${state.ocrPhotoCollapsed ? '▼ 展開' : '▲ 收合'}</span>
         </div>
         ${state.ocrPhotoCollapsed ? '' : `
           <img src="${state.photoPreview}" alt="白板照片" style="
             width:100%;border-radius:12px;margin-top:4px;
-            max-height:240px;object-fit:cover;border:1px solid #eee">
+            object-fit:contain;border:1px solid #eee;background:#f0f0f0">
         `}
       </div>
     `;
