@@ -437,7 +437,9 @@ const CONFIG = {
   // 替換成你的 Apps Script Web App URL
   API_URL: 'https://script.google.com/macros/s/AKfycbwa7z6nOZdZa5vj58prKNpC4Ch2d7Xe9Z1VR6Fo2HkJPIZ6-6oOHun5hjqDl9vKZGqJUA/exec',
   // 替換成你的 LIFF ID
-  LIFF_ID: '2009400350-P0w0ChuN'
+  LIFF_ID: '2009400350-P0w0ChuN',
+  // 白名單開放註冊截止時間（台灣時間），過了這個時間只有白名單上的人可以用
+  ACCESS_DEADLINE: '2026-03-25T23:59:59+08:00'
 };
 
 // ============================================================
@@ -470,6 +472,7 @@ function getEntryMode() {
 let state = {
   page: 'loading',       // loading, list, detail, success, camera, ocr-loading, ocr-confirm, ocr-success
   entryMode: 'manage',   // 'camera' or 'manage'
+  userId: '',             // LINE user ID（用於白名單驗證）
   students: [],
   allStudents: [],        // 全部學生快取（含暫停/已離開，用於名字比對）
   showAll: false,
@@ -517,12 +520,20 @@ function todayStr() {
 // ============================================================
 async function apiCall(action, data = {}) {
   try {
-    const readActions = ['getStudents', 'getStudentPoints', 'getStudentRecords', 'getAllPoints', 'checkDuplicate'];
+    const readActions = ['getStudents', 'getStudentPoints', 'getStudentRecords', 'getAllPoints', 'checkDuplicate', 'logUser', 'checkUser'];
+    
+    // 所有請求都帶上 userId
+    const payload = {
+      action,
+      ...data,
+      userId: data.userId || state.userId || '',
+    };
+    
     let res;
     
     if (readActions.includes(action)) {
       // GET 請求 - 避免 CORS 問題
-      const params = new URLSearchParams({ action, ...data });
+      const params = new URLSearchParams(payload);
       res = await fetch(CONFIG.API_URL + '?' + params.toString(), {
         method: 'GET',
         redirect: 'follow'
@@ -531,14 +542,20 @@ async function apiCall(action, data = {}) {
       // POST 請求 - 用於寫入操作
       res = await fetch(CONFIG.API_URL, {
         method: 'POST',
-        body: JSON.stringify({ action, ...data }),
+        body: JSON.stringify(payload),
         redirect: 'follow'
       });
     }
     
     const text = await res.text();
     try {
-      return JSON.parse(text);
+      const result = JSON.parse(text);
+      // 如果後端回傳無權限，顯示封鎖訊息
+      if (result.unauthorized) {
+        showAccessMessage('沒有權限使用此頁面');
+        return result;
+      }
+      return result;
     } catch (e) {
       console.error('JSON parse error:', text);
       showToast('回應格式錯誤');
@@ -552,20 +569,77 @@ async function apiCall(action, data = {}) {
 }
 
 // ============================================================
-// LIFF 初始化
+// LIFF 初始化（含白名單驗證）
 // ============================================================
 async function initLiff() {
   try {
     await liff.init({ liffId: CONFIG.LIFF_ID });
-    if (liff.isLoggedIn()) {
-      const profile = await liff.getProfile();
-      state.userName = profile.displayName;
+
+    // 未登入 → 導向登入
+    if (!liff.isLoggedIn()) {
+      liff.login();
+      return;
     }
+
+    // 非 LINE 內開啟 → 擋掉
+    if (!liff.isInClient()) {
+      showAccessMessage('請從 LINE 內開啟此功能');
+      return;
+    }
+
+    const profile = await liff.getProfile();
+    state.userName = profile.displayName || '';
+    state.userId = profile.userId || '';
+
+    // 判斷是否在開放註冊期間
+    const now = new Date();
+    const deadline = new Date(CONFIG.ACCESS_DEADLINE);
+    const inCollectionPeriod = !Number.isNaN(deadline.getTime()) && now <= deadline;
+
+    if (inCollectionPeriod) {
+      // 開放期：自動記錄 userId，直接放行
+      await apiCall('logUser', {
+        userId: profile.userId,
+        displayName: profile.displayName || ''
+      });
+      afterInit();
+      return;
+    }
+
+    // 鎖定期：驗證白名單
+    const permission = await apiCall('checkUser', {
+      userId: profile.userId
+    });
+
+    if (!permission || !permission.allowed) {
+      showAccessMessage('沒有權限使用此頁面');
+      return;
+    }
+
+    afterInit();
   } catch (err) {
-    console.log('LIFF init skipped (dev mode):', err);
-    state.userName = '測試老師';
+    console.error('LIFF init failed:', err);
+    showAccessMessage('系統初始化失敗，請稍後再試');
   }
-  afterInit();
+}
+
+// ---- 無權限 / 錯誤訊息（覆蓋整頁）----
+function showAccessMessage(message) {
+  document.body.innerHTML = `
+    <div style="font-family:'Noto Sans TC',sans-serif;background:#f7f8fa;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;">
+      <div style="max-width:360px;width:100%;background:#fff;border:1px solid #eee;border-radius:16px;padding:32px 24px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.04);color:#1a1a2e;line-height:1.8;">
+        <div style="font-size:36px;margin-bottom:12px">🔒</div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:8px;">點數系統</div>
+        <div style="font-size:15px;color:#555;">${message}</div>
+        <div style="margin-top:20px">
+          <button onclick="if(typeof liff!=='undefined'&&liff.isInClient())liff.closeWindow()" 
+            style="padding:12px 32px;background:#555;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
+            關閉
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 // ============================================================
